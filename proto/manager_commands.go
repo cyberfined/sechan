@@ -36,17 +36,17 @@ var ManagerCommands = managerCommands()
 func managerCommands() *CommandParser {
 	parser := CreateCommandParser(func(i interface{}) bool { _, ok := i.(ManagerHandler); return ok })
 	parser.AddCommand(conn, ManagerHandler(managerConnHandler))
+	parser.AddCommand(disc, ManagerHandler(managerDiscHandler))
 	parser.AddCommand(list, ManagerHandler(managerListHandler))
 	parser.AddCommand(send, ManagerHandler(managerSendHandler))
+	parser.AddCommand(quit, ManagerHandler(managerQuitHandler))
 	return parser
 }
 
-func (manager *Manager) SendMessage(data []byte) error {
-	_, err := manager.Conn.WritePackage(packCommand(send, data))
-	return err
+func (manager *Manager) SendMessage(msg []byte) error {
+	return sendCommand(manager.Conn, send, msg)
 }
 
-// Manager commands
 func managerConnHandler(host *Host, manager *Manager, data []byte) error {
 	conn, err := Dial("tcp", string(data))
 	if err != nil {
@@ -64,14 +64,22 @@ func managerConnHandler(host *Host, manager *Manager, data []byte) error {
 			return h(host, manager.Peer, arg)
 		})
 	}()
-	manager.Peer.WritePackage(packCommand(info, nil))
+
+	sendCommand(manager.Peer, info, nil)
+	return nil
+}
+
+func managerDiscHandler(host *Host, manager *Manager, data []byte) error {
+	if manager.Peer != nil {
+		manager.Peer.Close()
+		manager.Peer = nil
+	}
 	return nil
 }
 
 func managerListHandler(host *Host, manager *Manager, data []byte) error {
 	js, _ := json.Marshal(host.Peers)
-	_, err := manager.Conn.WritePackage(packCommand(reli, js))
-	return err
+	return sendCommand(manager.Conn, reli, js)
 }
 
 func managerSendHandler(host *Host, manager *Manager, data []byte) error {
@@ -79,6 +87,9 @@ func managerSendHandler(host *Host, manager *Manager, data []byte) error {
 		return errors.New("can't send to unknown peer")
 	}
 
-	_, err := manager.Peer.WritePackage(packCommand(send, data))
-	return err
+	return sendCommand(manager.Peer, send, data)
+}
+
+func managerQuitHandler(host *Host, manager *Manager, data []byte) error {
+	return nil
 }

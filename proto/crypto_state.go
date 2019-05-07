@@ -56,11 +56,6 @@ func InitCryptoState(key []byte, isUserA bool) *CryptoState {
 	return cs
 }
 
-func (cs *CryptoState) ExchangeKeys() {
-	cs.SendEnc, cs.RecEnc = cs.RecEnc, cs.SendEnc
-	cs.SendAuth, cs.RecAuth = cs.RecAuth, cs.SendAuth
-}
-
 func (cs *CryptoState) AuthAndEncrypt(data []byte) ([]byte, error) {
 	if cs.MsgSendCtr == MaxMessagesCount {
 		return nil, ErrCounterOverflow

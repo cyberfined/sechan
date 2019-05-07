@@ -1,6 +1,9 @@
 package proto
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strings"
+)
 
 /*
 
@@ -36,14 +39,12 @@ func peerCommands() *CommandParser {
 
 func peerInfoHandler(host *Host, peer *Peer, data []byte) error {
 	js, _ := json.Marshal(host)
-	_, err := peer.WritePackage(packCommand(refo, js))
-	return err
+	return sendCommand(peer, refo, js)
 }
 
 func peerListHandler(host *Host, peer *Peer, data []byte) error {
 	js, _ := json.Marshal(host.Peers)
-	_, err := peer.WritePackage(packCommand(reli, js))
-	return err
+	return sendCommand(peer, reli, js)
 }
 
 func peerSendHandler(host *Host, peer *Peer, data []byte) error {
@@ -52,7 +53,13 @@ func peerSendHandler(host *Host, peer *Peer, data []byte) error {
 }
 
 func peerRefoHandler(host *Host, peer *Peer, data []byte) error {
-	err := json.Unmarshal(data, peer)
+	var p *Peer = &Peer{}
+	err := json.Unmarshal(data, p)
+	if err == nil {
+		ip := strings.Split(peer.Conn.RemoteAddr().String(), ":")[0]
+		host.Peers[ip].Login = p.Login
+		host.Peers[ip].Addr = p.Addr
+	}
 	return err
 }
 

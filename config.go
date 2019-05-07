@@ -21,7 +21,8 @@ type Config struct {
 
 type UserConfig struct {
 	Login string
-	Port  uint16
+	Addr  string
+	Port  string
 }
 
 type DHStateConfig struct {

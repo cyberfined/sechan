@@ -9,6 +9,7 @@ import (
 
 type Host struct {
 	Login    string
+	Addr     string
 	DifHel   *DHState         `json:"-"`
 	Peers    map[string]*Peer `json:"-"`
 	Commands *CommandParser   `json:"-"`
@@ -135,8 +136,8 @@ func (host *Host) DialPeer(conn *Conn) (*Peer, error) {
 	if !ok {
 		host.Peers[ip] = peer
 	}
-	//peer.Crypto.ExchangeKeys()
 
+	sendCommand(peer, info, nil)
 	return peer, nil
 }
 
@@ -168,5 +169,6 @@ func (host *Host) AcceptPeer(conn *Conn) (*Peer, error) {
 		host.Peers[ip] = peer
 	}
 
+	sendCommand(peer, info, nil)
 	return peer, nil
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"./proto"
 	"log"
-	"strconv"
 	"strings"
 )
 
@@ -17,13 +16,14 @@ func main() {
 
 	host := &proto.Host{
 		Login:    config.Login,
+		Addr:     config.Addr + ":" + config.Port,
 		DifHel:   config.DifHel,
 		Peers:    config.Peers,
 		Commands: proto.PeerCommands,
 		Msg:      make(chan string),
 	}
 
-	ln, err := proto.Listen("tcp", ":"+strconv.Itoa(int(config.Port)))
+	ln, err := proto.Listen("tcp", ":"+config.Port)
 	if err != nil {
 		log.Println(err)
 		return

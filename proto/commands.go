@@ -26,6 +26,7 @@ var (
 	conn = Command{'C', 'O', 'N', 'N'}
 	disc = Command{'D', 'I', 'S', 'C'}
 	reer = Command{'R', 'E', 'E', 'R'}
+	quit = Command{'Q', 'U', 'I', 'T'}
 
 	ErrShortCommand = errors.New("command is too short")
 )
@@ -64,7 +65,7 @@ func (parser *CommandParser) GetHandler(data []byte) (interface{}, []byte, error
 }
 
 func (parser *CommandParser) CommandLoop(rw PackageReadWriter, execute func(interface{}, []byte) error) {
-	for {
+	for rw != nil {
 		buf, err := rw.ReadPackage()
 		if err != nil {
 			log.Println(err)
@@ -80,9 +81,14 @@ func (parser *CommandParser) CommandLoop(rw PackageReadWriter, execute func(inte
 		err = execute(handler, arg)
 		if err != nil {
 			log.Println(err)
-			rw.WritePackage(packCommand(reer, []byte(err.Error())))
+			sendCommand(rw, reer, []byte(err.Error()))
 		}
 	}
+}
+
+func sendCommand(rw PackageReadWriter, cmd Command, body []byte) error {
+	_, err := rw.WritePackage(packCommand(cmd, body))
+	return err
 }
 
 func packCommand(cmd Command, body []byte) []byte {
