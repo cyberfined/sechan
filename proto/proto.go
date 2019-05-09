@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+var (
+	MaxPacketSize uint32 = 65536
+	ErrLongPacket        = errors.New("packet is too long")
+)
+
 type Host struct {
 	Login    string
 	Addr     string
@@ -68,6 +73,10 @@ func (c *Conn) ReadPackage() ([]byte, error) {
 	}
 
 	length := binary.LittleEndian.Uint32(lbuf)
+	if length > MaxPacketSize {
+		return nil, ErrLongPacket
+	}
+
 	buf := make([]byte, length)
 	n, err = c.conn.Read(buf)
 	if err != nil {
