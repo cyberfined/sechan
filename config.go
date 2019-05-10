@@ -3,7 +3,10 @@ package main
 import (
 	"./proto"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
+	"net"
+	"strings"
 	"time"
 )
 
@@ -20,9 +23,10 @@ type Config struct {
 }
 
 type UserConfig struct {
-	Login string
-	Addr  string
-	Port  string
+	Login     string
+	Interface string
+	Addr      string
+	Port      string
 }
 
 type DHStateConfig struct {
@@ -38,6 +42,11 @@ func LoadUserConfig() (*UserConfig, error) {
 
 	uc := &UserConfig{}
 	err = json.Unmarshal(buf, uc)
+	if err != nil {
+		return nil, err
+	}
+
+	uc.Addr, err = addrByInterface(uc.Interface)
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +108,25 @@ func LoadPeers() map[string]*proto.Peer {
 func SavePeers(peers map[string]*proto.Peer) {
 	buf, _ := json.Marshal(peers)
 	ioutil.WriteFile(peersFile, buf, 0644)
+}
+
+func addrByInterface(name string) (string, error) {
+	iface, err := net.InterfaceByName(name)
+	if err != nil {
+		return "", err
+	}
+
+	addrs, err := iface.Addrs()
+	if err != nil {
+		return "", err
+	}
+
+	if len(addrs) == 0 {
+		return "", errors.New("failed to retrieve ip address")
+	}
+
+	ip := strings.Split(addrs[0].String(), "/")[0]
+	return ip, nil
 }
 
 func LoadConfig() (*Config, error) {

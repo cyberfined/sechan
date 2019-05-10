@@ -11,8 +11,7 @@ import (
 func main() {
 	config, err := LoadConfig()
 	if err != nil {
-		log.Println(err)
-		return
+		log.Fatalln(err)
 	}
 	log.Println("config is loaded")
 
@@ -45,7 +44,7 @@ func main() {
 		log.Println(err)
 		return
 	}
-	log.Println("server is started")
+	log.Printf("server is started: %s\n", host.Addr)
 
 	for {
 		conn, err := ln.Accept()
