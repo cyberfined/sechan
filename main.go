@@ -23,6 +23,9 @@ func main() {
 		Msg:      make(chan string),
 	}
 
+	go SendInfo(host, "239.0.0.0:12337")
+	go ReceiveInfo(host, "239.0.0.0:12337")
+
 	ln, err := proto.Listen("tcp", ":"+config.Port)
 	if err != nil {
 		log.Println(err)
