@@ -3,6 +3,8 @@ package main
 import (
 	"./proto"
 	"log"
+	"os"
+	"os/signal"
 	"strings"
 )
 
@@ -21,7 +23,19 @@ func main() {
 		Peers:    config.Peers,
 		Commands: proto.PeerCommands,
 		Msg:      make(chan string),
+		Quit:     make(chan bool),
 	}
+
+	sigchan := make(chan os.Signal)
+	signal.Notify(sigchan, os.Interrupt)
+	go func() {
+		select {
+		case <-sigchan:
+			Exit(host)
+		case <-host.Quit:
+			Exit(host)
+		}
+	}()
 
 	go SendInfo(host, "239.0.0.0:12337")
 	go ReceiveInfo(host, "239.0.0.0:12337")
@@ -90,4 +104,11 @@ func PeerHandler(host *proto.Host, conn *proto.Conn) {
 		h := handler.(proto.PeerHandler)
 		return h(host, peer, arg)
 	})
+}
+
+func Exit(host *proto.Host) {
+	host.Disconnect()
+	SavePeers(host.Peers)
+	log.Println("Exit")
+	os.Exit(0)
 }

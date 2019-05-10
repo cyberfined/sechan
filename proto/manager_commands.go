@@ -16,6 +16,7 @@ LIST       - request for peer list
 SEND msg   - send message to peer with appropriate ip address
 FILE path  - send file to peer with appropriate ip address
 SEEK login - request for peers with appropriate login
+QUIT       - quit
 
 RELI data  - response for LIST request
 RESE data  - response for SEEK request
@@ -91,5 +92,6 @@ func managerSendHandler(host *Host, manager *Manager, data []byte) error {
 }
 
 func managerQuitHandler(host *Host, manager *Manager, data []byte) error {
+	host.Quit <- true
 	return nil
 }
