@@ -16,6 +16,7 @@ LIST                   - request for peer list
 SEND msg               - send message with text msg
 FILE name max cur data - send cur of max part of file
 SEEK DHState           - request for ip of peer with DHState
+DISC                   - notification about disconnection
 
 REFO data              - response for INFO request
 RELI data              - response for LIST request
@@ -34,6 +35,7 @@ func peerCommands() *CommandParser {
 	parser.AddCommand(send, PeerHandler(peerSendHandler))
 	parser.AddCommand(refo, PeerHandler(peerRefoHandler))
 	parser.AddCommand(reli, PeerHandler(peerReliHandler))
+	parser.AddCommand(disc, PeerHandler(peerDiscHandler))
 	return parser
 }
 
@@ -49,6 +51,12 @@ func peerListHandler(host *Host, peer *Peer, data []byte) error {
 
 func peerSendHandler(host *Host, peer *Peer, data []byte) error {
 	host.Msg <- peer.Login + ": " + string(data)
+	return nil
+}
+
+func peerDiscHandler(host *Host, peer *Peer, data []byte) error {
+	peer.Close()
+	peer.Crypto = nil
 	return nil
 }
 

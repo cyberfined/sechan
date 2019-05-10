@@ -19,6 +19,7 @@ type Host struct {
 	Peers    map[string]*Peer `json:"-"`
 	Commands *CommandParser   `json:"-"`
 	Msg      chan string      `json:"-"`
+	Quit     chan bool        `json:"-"`
 }
 
 type PackageReadWriter interface {
@@ -194,4 +195,12 @@ func (host *Host) AcceptPeer(conn *Conn) (*Peer, error) {
 	sendCommand(peer, info, nil)
 	sendCommand(peer, list, nil)
 	return peer, nil
+}
+
+func (host *Host) Disconnect() {
+	for _, p := range host.Peers {
+		sendCommand(p, disc, nil)
+		p.Close()
+		p.Crypto = nil
+	}
 }
