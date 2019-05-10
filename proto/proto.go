@@ -7,10 +7,9 @@ import (
 	"strings"
 )
 
-var (
-	MaxPacketSize uint32 = 65536
-	ErrLongPacket        = errors.New("packet is too long")
-)
+const MaxPacketSize uint32 = 65536
+
+var ErrLongPacket = errors.New("packet is too long")
 
 type Host struct {
 	Login    string
@@ -199,6 +198,9 @@ func (host *Host) AcceptPeer(conn *Conn) (*Peer, error) {
 
 func (host *Host) Disconnect() {
 	for _, p := range host.Peers {
+		if p.Conn == nil {
+			continue
+		}
 		sendCommand(p, disc, nil)
 		p.Close()
 		p.Crypto = nil
