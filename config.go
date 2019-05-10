@@ -87,8 +87,8 @@ func LoadPeers() map[string]*proto.Peer {
 		return make(map[string]*proto.Peer)
 	}
 
-	var peers map[string]*proto.Peer
-	err = json.Unmarshal(buf, peers)
+	peers := make(map[string]*proto.Peer)
+	err = json.Unmarshal(buf, &peers)
 	if err != nil {
 		return make(map[string]*proto.Peer)
 	}
