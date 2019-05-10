@@ -82,7 +82,23 @@ Gen:
 }
 
 func LoadPeers() map[string]*proto.Peer {
-	return make(map[string]*proto.Peer)
+	buf, err := ioutil.ReadFile(peersFile)
+	if err != nil {
+		return make(map[string]*proto.Peer)
+	}
+
+	var peers map[string]*proto.Peer
+	err = json.Unmarshal(buf, peers)
+	if err != nil {
+		return make(map[string]*proto.Peer)
+	}
+
+	return peers
+}
+
+func SavePeers(peers map[string]*proto.Peer) {
+	buf, _ := json.Marshal(peers)
+	ioutil.WriteFile(peersFile, buf, 0644)
 }
 
 func LoadConfig() (*Config, error) {
