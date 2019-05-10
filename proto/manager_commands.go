@@ -3,6 +3,7 @@ package proto
 import (
 	"encoding/json"
 	"errors"
+	"os"
 )
 
 /*
@@ -24,10 +25,17 @@ REER data  - response with error
 
 */
 
+const fileBufReserved = 1024
+
 type Manager struct {
 	Conn     *Conn
 	Peer     *Peer
 	Commands *CommandParser
+}
+
+type File struct {
+	Name string
+	Data []byte
 }
 
 type ManagerHandler func(*Host, *Manager, []byte) error
@@ -40,6 +48,7 @@ func managerCommands() *CommandParser {
 	parser.AddCommand(disc, ManagerHandler(managerDiscHandler))
 	parser.AddCommand(list, ManagerHandler(managerListHandler))
 	parser.AddCommand(send, ManagerHandler(managerSendHandler))
+	parser.AddCommand(file, ManagerHandler(managerFileHandler))
 	parser.AddCommand(quit, ManagerHandler(managerQuitHandler))
 	return parser
 }
@@ -89,6 +98,47 @@ func managerSendHandler(host *Host, manager *Manager, data []byte) error {
 	}
 
 	return sendCommand(manager.Peer, send, data)
+}
+
+func managerFileHandler(host *Host, manager *Manager, data []byte) error {
+	if manager.Peer == nil {
+		return errors.New("can't send to unknown peer")
+	}
+
+	fd, err := os.Open(string(data))
+	if err != nil {
+		return err
+	}
+	defer fd.Close()
+
+	stat, err := fd.Stat()
+	if err != nil {
+		return err
+	}
+
+	chunkSize := int64(MaxPacketSize - CommandLength - fileBufReserved)
+	chunks := stat.Size() / chunkSize
+	if stat.Size()%chunkSize != 0 {
+		chunks++
+	}
+
+	fstruct := File{
+		Name: string(data),
+	}
+	buf := make([]byte, chunkSize+fileBufReserved)
+	for ; chunks > 0; chunks-- {
+		n, err := fd.Read(buf)
+		if err != nil {
+			return err
+		}
+		fstruct.Data = buf[:n]
+		js, _ := json.Marshal(fstruct)
+		err = sendCommand(manager.Peer, file, js)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func managerQuitHandler(host *Host, manager *Manager, data []byte) error {
