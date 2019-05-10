@@ -14,7 +14,6 @@ commands:
 INFO                   - request user info
 LIST                   - request for peer list
 SEND msg               - send message with text msg
-FILE name max cur data - send cur of max part of file
 SEEK DHState           - request for ip of peer with DHState
 DISC                   - notification about disconnection
 
@@ -33,9 +32,9 @@ func peerCommands() *CommandParser {
 	parser.AddCommand(info, PeerHandler(peerInfoHandler))
 	parser.AddCommand(list, PeerHandler(peerListHandler))
 	parser.AddCommand(send, PeerHandler(peerSendHandler))
+	parser.AddCommand(disc, PeerHandler(peerDiscHandler))
 	parser.AddCommand(refo, PeerHandler(peerRefoHandler))
 	parser.AddCommand(reli, PeerHandler(peerReliHandler))
-	parser.AddCommand(disc, PeerHandler(peerDiscHandler))
 	return parser
 }
 
@@ -61,7 +60,7 @@ func peerDiscHandler(host *Host, peer *Peer, data []byte) error {
 }
 
 func peerRefoHandler(host *Host, peer *Peer, data []byte) error {
-	var p *Peer = &Peer{}
+	p := &Peer{}
 	err := json.Unmarshal(data, p)
 	if err == nil {
 		ip := strings.Split(peer.Conn.RemoteAddr().String(), ":")[0]
