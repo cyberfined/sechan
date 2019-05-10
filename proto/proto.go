@@ -34,12 +34,24 @@ type Listener struct {
 	listener net.Listener
 }
 
+func CreateConn(conn net.Conn) *Conn {
+	return &Conn{
+		conn: conn,
+	}
+}
+
 func Dial(network, address string) (*Conn, error) {
 	conn, err := net.Dial(network, address)
 	if err != nil {
 		return nil, err
 	}
 	return &Conn{conn: conn}, nil
+}
+
+func CreateListener(listener net.Listener) *Listener {
+	return &Listener{
+		listener: listener,
+	}
 }
 
 func Listen(network, address string) (*Listener, error) {
@@ -147,6 +159,7 @@ func (host *Host) DialPeer(conn *Conn) (*Peer, error) {
 	}
 
 	sendCommand(peer, info, nil)
+	sendCommand(peer, list, nil)
 	return peer, nil
 }
 
@@ -179,5 +192,6 @@ func (host *Host) AcceptPeer(conn *Conn) (*Peer, error) {
 	}
 
 	sendCommand(peer, info, nil)
+	sendCommand(peer, list, nil)
 	return peer, nil
 }
