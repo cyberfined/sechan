@@ -62,6 +62,9 @@ func ReceiveInfo(host *proto.Host, addr string) {
 		if !ok {
 			host.Peers[ip] = peer
 			SavePeers(host.Peers)
+		} else {
+			host.Peers[ip].Login = peer.Login
+			host.Peers[ip].Addr = peer.Addr
 		}
 	}
 }
