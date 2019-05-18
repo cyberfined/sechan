@@ -28,6 +28,13 @@ RESE data              - response for SEEK request
 
 type PeerHandler func(*Host, *Peer, []byte) error
 
+type Message struct {
+	Type  string
+	Login string
+	Addr  string
+	Data  string
+}
+
 var PeerCommands = peerCommands()
 
 func peerCommands() *CommandParser {
@@ -53,7 +60,13 @@ func peerListHandler(host *Host, peer *Peer, data []byte) error {
 }
 
 func peerSendHandler(host *Host, peer *Peer, data []byte) error {
-	host.Msg <- peer.Login + ": " + string(data)
+	js, _ := json.Marshal(Message{
+		Type:  "Message",
+		Login: peer.Login,
+		Addr:  peer.Addr,
+		Data:  string(data),
+	})
+	host.Msg <- string(js)
 	return nil
 }
 
@@ -79,7 +92,13 @@ func peerFileHandler(host *Host, peer *Peer, data []byte) error {
 	}
 	defer fd.Close()
 
-	host.Msg <- peer.Login + ": part of " + fstruct.Name + " was received"
+	js, _ := json.Marshal(Message{
+		Type:  "File",
+		Login: peer.Login,
+		Addr:  peer.Addr,
+		Data:  fstruct.Name,
+	})
+	host.Msg <- string(js)
 	_, err = fd.Write(fstruct.Data)
 	return err
 }
