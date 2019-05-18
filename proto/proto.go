@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const MaxPacketSize uint32 = 65536
+const MaxPacketSize uint32 = 8192
 
 var ErrLongPacket = errors.New("packet is too long")
 
