@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"path/filepath"
 )
 
 /*
@@ -120,16 +121,16 @@ func managerFileHandler(host *Host, manager *Manager, data []byte) error {
 		return err
 	}
 
-	chunkSize := int64(MaxPacketSize - CommandLength - fileBufReserved)
+	chunkSize := int64(((MaxPacketSize - CommandLength - fileBufReserved) * 3) / 4)
 	chunks := stat.Size() / chunkSize
 	if stat.Size()%chunkSize != 0 {
 		chunks++
 	}
 
 	fstruct := File{
-		Name: string(data),
+		Name: filepath.Base(string(data)),
 	}
-	buf := make([]byte, chunkSize+fileBufReserved)
+	buf := make([]byte, chunkSize)
 	for ; chunks > 0; chunks-- {
 		n, err := fd.Read(buf)
 		if err != nil {
