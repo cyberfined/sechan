@@ -142,6 +142,7 @@ func (host *Host) DialPeer(conn *Conn) (*Peer, error) {
 	v, ok := host.Peers[ip]
 	if ok {
 		peer.Login = v.Login
+		peer.Addr = v.Addr
 		peer.Crypto = v.Crypto
 	}
 
@@ -174,6 +175,7 @@ func (host *Host) AcceptPeer(conn *Conn) (*Peer, error) {
 	v, ok := host.Peers[ip]
 	if ok {
 		peer.Login = v.Login
+		peer.Addr = v.Addr
 		peer.Crypto = v.Crypto
 	}
 	peer.Conn = conn
