@@ -63,6 +63,10 @@ func managerConnHandler(host *Host, manager *Manager, data []byte) error {
 		return err
 	}
 
+	if manager.Peer != nil {
+		manager.Peer.Close()
+	}
+
 	manager.Peer, err = host.DialPeer(conn)
 	if err != nil {
 		return err
