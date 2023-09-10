@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./proto"
+	"github.com/cyberfined/sechan/proto"
 	"log"
 	"os"
 	"os/signal"
